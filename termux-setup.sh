@@ -1,6 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # termux-musicbot installer. On a clean Termux, run:
-#   curl -fsSL https://raw.githubusercontent.com/rex4ie/termux-musicbot/main/termux-setup.sh | bash
+#   yes | pkg upgrade && pkg install -y curl && curl -fsSL https://raw.githubusercontent.com/rex4ie/termux-musicbot/main/termux-setup.sh | bash
 # Safe to re-run: it updates the code and packages and keeps your .env.
 #
 # The voice-call engine only ships standard-Linux (glibc) builds, which can't run on
@@ -11,7 +11,7 @@ APP=/root/termux-musicbot
 ROOTFS_HINT="$HOME/.musicbot-env-import"
 
 echo "[1/5] Updating Termux packages..."
-yes | pkg update -y || true
+yes | pkg upgrade -y   # full upgrade; a partial one breaks curl/openssl
 pkg install -y proot-distro
 
 echo "[2/5] Installing Debian container (skipped if present)..."
