@@ -8,7 +8,7 @@ Uses [Kurigram](https://github.com/KurimuzonAkuma/pyrogram) + [py-tgcalls](https
 1. Install **Termux from F-Droid** (https://f-droid.org/packages/com.termux/), not the Play Store.
 2. Open Termux and run:
    ```bash
-   yes | pkg upgrade && pkg install -y curl && curl -fsSL https://raw.githubusercontent.com/rex4ie/termux-musicbot/main/termux-setup.sh | bash
+   apt update && apt full-upgrade -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold && apt install -y curl && curl -fsSL https://raw.githubusercontent.com/rex4ie/termux-musicbot/main/termux-setup.sh | bash
    ```
    The first install takes 10 to 20 minutes.
 3. Log in to Telegram (skip this if the installer says it found your `.env`):
