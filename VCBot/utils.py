@@ -12,13 +12,21 @@ VIDEO_FMT = "best[height<=?720][width<=?1280]/best"
 VIDEO_Q = {720: VideoQuality.HD_720p, 480: VideoQuality.SD_480p, 360: VideoQuality.SD_360p}
 
 
-def _extract(query, fmt):
+# YouTube often withholds muxed (audio+video) formats from the default client.
+# These clients still serve muxed HLS streams, so retry with them on failure.
+FALLBACK_CLIENTS = (None, ["web_safari", "tv", "ios"], ["mweb", "android"])
+FALLBACK_VIDEO_FMT = "best[acodec!=none][vcodec!=none]/best"
+
+
+def _extract_once(query, fmt, clients):
     opts = {
         "format": fmt,
         "quiet": True,
         "noplaylist": True,
         "js_runtimes": {"node": {}},
     }
+    if clients:
+        opts["extractor_args"] = {"youtube": {"player_client": clients}}
     with YoutubeDL(opts) as ydl:
         info = ydl.extract_info(query, download=False)
         if "entries" in info:
@@ -29,6 +37,20 @@ def _extract(query, fmt):
         if len(title) > 34:
             title = title[:35] + "..."
         return title, info["url"], info.get("webpage_url") or query
+
+
+def _extract(query, fmt):
+    err = None
+    fmts = (fmt, FALLBACK_VIDEO_FMT) if fmt == VIDEO_FMT else (fmt,)
+    for clients in FALLBACK_CLIENTS:
+        for f in fmts:
+            try:
+                return _extract_once(query, f, clients)
+            except Exception as e:
+                err = e
+                if "format is not available" not in str(e) and "url" not in str(e):
+                    raise
+    raise err
 
 
 async def url_info(url, video=False):
