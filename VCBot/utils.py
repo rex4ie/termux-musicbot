@@ -14,7 +14,7 @@ VIDEO_Q = {720: VideoQuality.HD_720p, 480: VideoQuality.SD_480p, 360: VideoQuali
 
 # YouTube often withholds muxed (audio+video) formats from the default client.
 # These clients still serve muxed HLS streams, so retry with them on failure.
-FALLBACK_CLIENTS = (None, ["web_safari", "tv", "ios"], ["mweb", "android"])
+FALLBACK_CLIENTS = (None, ["tv"], ["ios"], ["web_safari"], ["mweb"], ["android"])
 FALLBACK_VIDEO_FMT = "best[acodec!=none][vcodec!=none]/best"
 
 
@@ -47,9 +47,9 @@ def _extract(query, fmt):
             try:
                 return _extract_once(query, f, clients)
             except Exception as e:
-                err = e
-                if "format is not available" not in str(e) and "url" not in str(e):
-                    raise
+                # Any client can fail in its own way ("page needs to be reloaded",
+                # missing format, PO token...). Keep trying; report the first error.
+                err = err or e
     raise err
 
 
