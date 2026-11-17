@@ -1,5 +1,8 @@
 from config import NO_PREVIEW
 import asyncio
+import os
+import shutil
+import sys
 import re
 from yt_dlp import YoutubeDL
 from pytgcalls.types import MediaStream, AudioQuality, VideoQuality
@@ -12,6 +15,19 @@ VIDEO_FMT = "best[height<=?720][width<=?1280]/best"
 VIDEO_Q = {720: VideoQuality.HD_720p, 480: VideoQuality.SD_480p, 360: VideoQuality.SD_360p}
 
 
+def _js_runtimes():
+    # yt-dlp needs a modern JS runtime to unlock YouTube formats. Debian's node is
+    # too old, so prefer the deno binary installed into the venv by pip.
+    rt = {}
+    deno = os.path.join(sys.prefix, "bin", "deno")
+    if os.path.exists(deno) or shutil.which("deno"):
+        rt["deno"] = {"path": deno} if os.path.exists(deno) else {}
+    rt["node"] = {}
+    return rt
+
+
+JS_RUNTIMES = _js_runtimes()
+
 # YouTube often withholds muxed (audio+video) formats from the default client.
 # These clients still serve muxed HLS streams, so retry with them on failure.
 FALLBACK_CLIENTS = (None, ["tv"], ["ios"], ["web_safari"], ["mweb"], ["android"])
@@ -23,7 +39,7 @@ def _extract_once(query, fmt, clients):
         "format": fmt,
         "quiet": True,
         "noplaylist": True,
-        "js_runtimes": {"node": {}},
+        "js_runtimes": JS_RUNTIMES,
     }
     if clients:
         opts["extractor_args"] = {"youtube": {"player_client": clients}}

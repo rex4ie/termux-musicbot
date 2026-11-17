@@ -6,6 +6,7 @@ attrs==26.1.0
 brotli==1.2.1
 certifi==2026.10.23
 charset-normalizer==3.5.2
+deno==2.9.8
 deprecation==2.1.0
 frozenlist==1.8.0
 idna==3.20
